@@ -4,7 +4,7 @@
 Summary: IPMI (Intelligent Platform Management Interface) library and tools
 Name: OpenIPMI
 Version: 2.0.16
-Release: 12%{?dist}
+Release: 14%{?dist}
 License: LGPLv2+ and GPLv2+ or BSD
 Group: System Environment/Base
 URL: http://sourceforge.net/projects/openipmi/
@@ -18,6 +18,7 @@ BuildRequires: openssl-devel python-devel perl-devel
 BuildRequires: desktop-file-utils
 Requires(post): chkconfig
 Requires(preun): chkconfig
+Requires: OpenIPMI-libs = %{version}-%{release}
 
 Patch1: OpenIPMI-2.0.18-pthread-pkgconfig.patch
 
@@ -38,6 +39,7 @@ and applications.
 Group: Development/Libraries
 Summary: IPMI Perl language bindings
 Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+Requires: OpenIPMI-libs = %{version}-%{release}
 
 %description perl
 The OpenIPMI-perl package contains the Perl language bindings for OpenIPMI.
@@ -45,6 +47,7 @@ The OpenIPMI-perl package contains the Perl language bindings for OpenIPMI.
 %package python
 Group: Development/Libraries
 Summary: IPMI Python language bindings
+Requires: OpenIPMI-libs = %{version}-%{release} 
 
 %description python
 The OpenIPMI-python package contains the Python language bindings for OpenIPMI.
@@ -54,6 +57,7 @@ Group: Development/Libraries
 Summary: The development environment for the OpenIPMI project
 Requires: pkgconfig
 Requires: %{name} = %{version}-%{release}
+Requires: OpenIPMI-libs = %{version}-%{release}
 
 %description devel
 The OpenIPMI-devel package contains the development libraries and header files
@@ -147,6 +151,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
+* Tue Dec 11 2012 Ales Ledvinka <aledvink@redhat.com> - 2.0.16-14
+- fixed rpmdiff tests
+
+* Tue Dec 11 2012 Ales Ledvinka <aledvink@redhat.com> - 2.0.16-13
+- init script modified for in-kernel ipmi (#881450)
+
 * Fri May 28 2010 Jan Safranek <jsafrane@redhat.com> - 2.0.16-12
 - compiled with -fno-strict-aliasing (#596148)
 

@@ -134,6 +134,16 @@ modules_loaded_verbose()
 		if /sbin/lsmod | grep $m >/dev/null 2>&1 ; then
 			echo "$m module loaded."
 			OnePlusLoaded=1
+		elif [ -d "/sys/module/$m" ]; then
+			echo "$m module in kernel."
+			OnePlusLoaded=1
+		elif [ "$m" == "ipmi_msghandler" ]; then
+			if [ -d "/sys/module/ipmi_si" ]; then
+				echo "$m module in kernel."
+				OnePlusLoaded=1
+			else
+				OnePlusUnloaded=1
+			fi
 		else
 			echo "$m module not loaded."
 			OnePlusUnloaded=1
@@ -148,6 +158,35 @@ modules_loaded()
 	for m in $@; do
 		if /sbin/lsmod | grep $m >/dev/null 2>&1 ; then
 			OnePlusLoaded=1
+		elif [ -d "/sys/module/$m" ]; then
+			OnePlusLoaded=1
+		elif [ "$m" == "ipmi_msghandler" ]; then
+			if [ -d "/sys/module/ipmi_si" ]; then
+				OnePlusLoaded=1
+			else
+				OnePlusUnloaded=1
+			fi
+		else
+			OnePlusUnloaded=1
+		fi
+	done
+}
+
+modules_unloaded()
+{
+	OnePlusLoaded=0
+	OnePlusUnloaded=0
+	for m in $@; do
+		if /sbin/lsmod | grep $m >/dev/null 2>&1 ; then
+			OnePlusLoaded=1
+		elif [ -d "/sys/module/$m" ]; then
+			OnePlusUnloaded=1
+		elif [ "$m" == "ipmi_msghandler" ]; then
+			if [ -d "/sys/module/ipmi_si" ]; then
+				OnePlusUnloaded=1 # XXX: compiled in kernel
+			else
+				OnePlusUnloaded=1
+			fi
 		else
 			OnePlusUnloaded=1
 		fi
@@ -430,7 +469,7 @@ stop()
 {
 	echo -n "Stopping ${MODULE_NAME} drivers: "
 	unload_ipmi_modules_leave_features
-	modules_loaded ${MODULES_INTERFACES}
+	modules_unloaded ${MODULES_INTERFACES}
 	if [ ${OnePlusLoaded} -ne 0 ]; then
 		RETVAL=$((RETVAL | 32))
 		log_failure_msg "may be in use"
@@ -444,7 +483,7 @@ stop_all()
 {
 	echo -n $"Stopping all ${MODULE_NAME} drivers: "
 	unload_all_ipmi_modules
-	modules_loaded ${MODULES}
+	modules_unloaded ${MODULES}
 	if [ ${OnePlusLoaded} -ne 0 ]; then
 		RETVAL=$((RETVAL | 32))
 		log_failure_msg "may be in use"
